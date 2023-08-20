@@ -8,6 +8,8 @@ import (
 	"strings"
 
 	"hub.lol/drem/buildinfo"
+
+	_ "github.com/urfave/cli/v2"
 )
 
 type Cmd struct {
