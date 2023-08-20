@@ -3,22 +3,41 @@ package main
 import (
 	"flag"
 	"fmt"
-	_ "github.com/samber/lo"
-	"github.com/spf13/pflag"
-	"hub.lol/drem/buildinfo"
 	"log"
+	"os"
+	"strings"
+
+	"hub.lol/drem/buildinfo"
 )
 
-var cmds = make(map[string]func([]string))
+type Cmd struct {
+	name    string
+	desc    string
+	minArgs uint8
+	maxArgs uint8
+	run     func(args []string) uint8
+}
+
+func (cmd *Cmd) Run(args []string) uint8 {
+	if len(args) < int(cmd.minArgs) {
+		log.Fatalln("invalid argument count ( < min )")
+	}
+	if len(args) > int(cmd.maxArgs) {
+		log.Fatalln("invalid argument count ( > max )")
+	}
+	return cmd.run(args)
+}
+
+var cmds map[string]Cmd
 
 func main() {
 	log.SetFlags(0)
 
 	var help bool
-	pflag.BoolVarP(&help, "help", "h", false, "Print message help and exit")
+	flag.BoolVar(&help, "help", false, "Print message help and exit")
 
 	var verbose bool
-	pflag.BoolVarP(&verbose, "verbose", "v", false, "Enable verbose output")
+	flag.BoolVar(&verbose, "verbose", false, "Enable verbose output")
 
 	flag.Parse()
 
@@ -26,6 +45,8 @@ func main() {
 	if len(flag.Args()) > 0 {
 		cmd = flag.Args()[0]
 	}
+	cmd = strings.TrimSpace(cmd)
+	cmd = strings.ToLower(cmd)
 
 	var args []string
 	if len(flag.Args()) > 1 {
@@ -34,39 +55,119 @@ func main() {
 
 	log.Printf("cmd=%q args=%q\n", cmd, args)
 
-	cmds[""] = func([]string) {
-		fmt.Println("Hello, World!")
+	cmds["list"] = Cmd{
+		name:    "list",
+		desc:    "",
+		minArgs: 0,
+		maxArgs: 0,
+		run:     func([]string) uint8 { return 0 },
 	}
 
-	cmds["list"] = nil
-
-	cmds["create"] = nil
-
-	cmds["delete"] = nil
-
-	cmds["start"] = nil
-
-	cmds["stop"] = nil
-
-	cmds["restart"] = nil
-
-	cmds["logs"] = nil
-
-	cmds["status"] = nil
-
-	cmds["validate"] = nil
-
-	cmds["runas"] = nil
-
-	cmds["help"] = func([]string) {
-		printHelp()
+	cmds["create"] = Cmd{
+		name:    "create",
+		desc:    "",
+		minArgs: 1,
+		maxArgs: 1,
+		run:     func([]string) uint8 { return 0 },
 	}
 
-	cmds["version"] = func([]string) {
-		printVersion()
+	cmds["delete"] = Cmd{
+		name:    "delete",
+		desc:    "",
+		minArgs: 1,
+		maxArgs: 1,
+		run:     func([]string) uint8 { return 0 },
 	}
 
-	cmds[cmd](args)
+	cmds["start"] = Cmd{
+		name:    "start",
+		desc:    "",
+		minArgs: 1,
+		maxArgs: 1,
+		run:     func([]string) uint8 { return 0 },
+	}
+
+	cmds["stop"] = Cmd{
+		name:    "stop",
+		desc:    "",
+		minArgs: 1,
+		maxArgs: 1,
+		run:     func([]string) uint8 { return 0 },
+	}
+
+	cmds["restart"] = Cmd{
+		name:    "restart",
+		desc:    "",
+		minArgs: 1,
+		maxArgs: 1,
+		run:     func([]string) uint8 { return 0 },
+	}
+
+	cmds["logs"] = Cmd{
+		name:    "logs",
+		desc:    "",
+		minArgs: 1,
+		maxArgs: 1,
+		run:     func([]string) uint8 { return 0 },
+	}
+
+	cmds["status"] = Cmd{
+		name:    "status",
+		desc:    "",
+		minArgs: 1,
+		maxArgs: 1,
+		run:     func([]string) uint8 { return 0 },
+	}
+
+	cmds["validate"] = Cmd{
+		name:    "validate",
+		desc:    "",
+		minArgs: 1,
+		maxArgs: 1,
+		run:     func([]string) uint8 { return 0 },
+	}
+
+	cmds["runas"] = Cmd{
+		name:    "runas",
+		desc:    "",
+		minArgs: 1,
+		maxArgs: 255,
+		run:     func([]string) uint8 { return 0 },
+	}
+
+	cmds["help"] = Cmd{
+		name:    "help",
+		desc:    "",
+		minArgs: 0,
+		maxArgs: 1,
+		run: func([]string) uint8 {
+			printHelp()
+			return 0
+		},
+	}
+
+	cmds["version"] = Cmd{
+		name:    "version",
+		desc:    "",
+		minArgs: 0,
+		maxArgs: 0,
+		run: func([]string) uint8 {
+			printVersion()
+			return 0
+		},
+	}
+
+	// alias root cmd to help cmd
+	cmds[""] = cmds["help"]
+
+	c, ok := cmds[cmd]
+	// print help if cmd is unknown
+	if !ok {
+		c = cmds["help"]
+		os.Exit(1)
+	}
+
+	os.Exit(int(c.Run(args)))
 }
 
 func printHelp() {
