@@ -1,14 +1,10 @@
-package buildinfo
+package version
 
 import (
 	"fmt"
 	"log"
-	"path"
 	"runtime/debug"
 )
-
-var name = "unknown"
-var module = "unknown"
 
 var tag = "unknown"
 var rev = "unknown"
@@ -20,10 +16,6 @@ func init() {
 		log.Fatalln("unable to read build info from binary")
 		return
 	}
-
-	name = path.Base(bi.Main.Path)
-	module = bi.Main.Path
-
 	for _, bs := range bi.Settings {
 		switch bs.Key {
 		case "vcs.revision":
@@ -36,15 +28,7 @@ func init() {
 	}
 }
 
-func Name() string {
-	return name
-}
-
-func Module() string {
-	return module
-}
-
-func Version() string {
+func String() string {
 	ver := fmt.Sprintf("%s-%s", tag, rev)
 	if dirty {
 		ver = ver + "-dirty"
