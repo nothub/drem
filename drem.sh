@@ -21,15 +21,17 @@ Global Options:
   -h, --help       Print this help and exit
 Commands:
   list
-  create   <name>
-  delete   <name>
-  start    <name>
-  stop     <name>
-  restart  <name>
-  logs     <name>
-  status   <name>
-  validate <name>
-  runas    <name> <arg>..."
+  create    <name>
+  delete    <name>
+  start     <name>
+  stop      <name>
+  restart   <name>
+  logs      <name>
+  status    <name>
+  validate  <name>
+  runas     <name> <arg>...
+  help     [<name>]
+  version"
 )
 
 assert_root() (
