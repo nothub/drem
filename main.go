@@ -28,7 +28,7 @@ func (cmd *Cmd) Run(args []string) uint8 {
 	return cmd.run(args)
 }
 
-var cmds map[string]Cmd
+var cmds = make(map[string]Cmd)
 
 func main() {
 	log.SetFlags(0)
