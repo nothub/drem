@@ -11,16 +11,19 @@ release: clean
 	GOOS=linux GOARCH=amd64 go build $(LDFLAGS) -o out/$(BIN_NAME)
 	GOOS=linux GOARCH=arm64 go build $(LDFLAGS) -o out/$(BIN_NAME)-arm
 
+.PHONY: check
+check: lint test
+
+.PHONY: lint
+lint:
+	go vet
+
+.PHONY: test
+test:
+	go test -v -parallel $(shell grep -c -E "^processor.*[0-9]+" "/proc/cpuinfo") $(MOD_NAME)/...
+
 .PHONY: clean
 clean:
 	go clean
 	go mod tidy
 	-rm -rf out
-
-.PHONY: check
-check:
-	go vet
-	go test -v -parallel $(shell grep -c -E "^processor.*[0-9]+" "/proc/cpuinfo") $(MOD_NAME)/...
-
-.PHONY: test
-test: check
